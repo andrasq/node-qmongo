@@ -23,9 +23,9 @@ var crypto = require('crypto');
 
 var QBuffer = require('qbuffer');
 var QList = require('qlist');
-var utf8 = require('./utf8');
-var qbson = require('./qbson');
-var bytes = require('./bytes');
+var utf8 = require('qbson/utf8');
+var qbson = require('qbson');
+var bytes = require('qbson/bytes');
 
 var putInt32 = qbson.encode.putInt32;
 var getUInt32 = qbson.decode.getUInt32;
