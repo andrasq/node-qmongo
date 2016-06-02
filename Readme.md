@@ -13,6 +13,10 @@ The former is a Cursor-ed mongodb driver that supports batched data streaming.
 The latter is a simple query-response driver that returns the matching documents
 (up to the specified limit, or up to 2^31-1 by default).
 
+qm
+--
+
+See [qm](./qm.md)
 
 Related Work
 ------------

@@ -1,14 +1,17 @@
 /**
  * test of using qbson to talk to mongodb
  *
+ * Note: this was the core code that eventually turned into qmongo.js
+ * It is left here for reference and for experimentation.
+ *
  * 2016-05-23 - AR.
  */
 
 'use strict';
 
 var net = require('net');
-var qbson = require('./qbson');
-var utf8 = require('./utf8');
+var qbson = require('qbson');
+var utf8 = require('qbson/utf8');
 var QBuffer = require('qbuffer');
 var util = require('util');
 var BSON = require('bson').BSONPure.BSON;
