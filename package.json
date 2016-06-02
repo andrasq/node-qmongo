@@ -1,16 +1,22 @@
 {
-  "name": "qbson",
-  "version": "0.0.7",
-  "description": "fast js-only bson encode / decode",
-  "keywords": ["fast", "bson", "buffalo", "Andras"],
+  "name": "qmongo",
+  "version": "0.1.0",
+  "description": "lean, fast mongodb driver",
+  "keywords": ["fast", "mongo", "mongodb", "driver", "Andras"],
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/andrasq/node-qbson"
+    "url": "git://github.com/andrasq/node-qmongo"
   },
-  "main": "qbson.js",
+  "main": "qmongo.js",
   "author": {
     "name": "Andras",
     "url": "http://github.com/andrasq"
+  },
+  "dependencies": {
+    "qbson": "git://github.com/andrasq/node-qbson"
+  },
+  "devDependencies": {
+    "mongodb": "2.x"
   }
 }
