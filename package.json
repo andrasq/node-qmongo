@@ -1,6 +1,6 @@
 {
   "name": "qmongo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "lean, fast mongodb driver",
   "keywords": ["fast", "mongo", "mongodb", "driver", "Andras"],
   "license": "Apache-2.0",

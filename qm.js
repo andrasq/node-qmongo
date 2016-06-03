@@ -166,11 +166,9 @@ QMongo.prototype.setSocket = function setSocket( socket ) {
     });
 
     socket.once('error', function(err) {
-        if (qmongo) {
-            qmongo.socket = null;       // socket also signals that is connected
-            qmongo.close();             // callbacks should see it closed
-            qmongo._errorAllCalls(err);
-        }
+        self.socket = null;       // socket also signals that is connected
+        self.close();             // callbacks should see it closed
+        self._errorAllCalls(err);
     });
 }
 
@@ -316,7 +314,7 @@ QMongo.prototype.opQuery = function opQuery( options, ns, skip, limit, query, fi
 
     var qInfo;
     this.queryQueue.push(qInfo = {
-        cb: callback || _noop,  // need a placeholder to deliver docs to toArray 
+        cb: callback || _noop,  // need a placeholder to deliver docs to toArray
         raw: options.raw,
         bson: bson,
         docs: null,
@@ -388,7 +386,7 @@ function buildQuery( reqId, ns, query, fields, skip, limit ) {
     // allocate a buffer to hold the query
     var szQuery = qbson.encode.guessSize(query);
     var szFields = qbson.encode.guessSize(fields);
-    var bufSize = 16 + 4+(3*ns.length+1)+8 + 1 + szQuery + szFields;;
+    var bufSize = 16 + 4+(3*ns.length+1)+8 + 1 + szQuery + szFields;
     // TODO: normalize query sizes for easier reuse?
     var msg = new Buffer(bufSize);
 
@@ -477,7 +475,7 @@ function deliverReplies( qmongo, qbuf ) {
                 for (var k in reply.error) err[k] = reply.error[k];
             }
             else if (reply.responseFlags & FL_R_CURSOR_NOT_FOUND) {
-                var err = new MongoError('CursorNotFound');
+                err = new MongoError('CursorNotFound');
                 docs = null;
             }
         }
@@ -550,7 +548,7 @@ function decodeReply( buf, base, bound, raw ) {
     while (base < bound) {
         var obj, len = getUInt32(buf, base);
         // return a complete bson object if raw, or decode faster without buf.slice to object
-        var obj = raw ? buf.slice(base, base+len) : getBsonEntities(buf, base+4, base+len-1, new Object())
+        obj = raw ? buf.slice(base, base+len) : getBsonEntities(buf, base+4, base+len-1, new Object())
         reply.documents.push(obj);
         base += len;
     }
@@ -593,7 +591,6 @@ var mongo = QMongo;
 mongo.connect("mongodb://@localhost", function(err, db) {
     if (err) throw err;
     var n = 0;
-    var t1 = Date.now();
     // caution: 1e6 pending calls crashed my mongod!
     var nloops = 5000;
     var limit = 200;
