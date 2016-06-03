@@ -17,7 +17,7 @@ Api
 ### qmongo.connect( url, options, callback(err, qm) )
 
 Connect to the db named by the url.  The url format is `"mongodb://<user>:<pwd>@<host></database>"`.
-The leading "mongodb://" and the hostname `"<host>"` are required.
+The leading `"mongodb://"` and the hostname `"<host>"` are required.
 
 ### qm.useCollection( [dbName,] collectionName )
 
@@ -36,4 +36,7 @@ Options:
 - limit
 - raw
 
-### qm.runCommand( cmd, args, callback(err, reply) )
+### qm.runCommand( cmd, callback(err, reply) )
+
+Execute the mongodb [database command](https://docs.mongodb.com/manual/reference/command/)
+against the current database and return the results.

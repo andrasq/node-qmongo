@@ -225,10 +225,9 @@ QMongo.prototype.collection = function collection( collectionName ) {
     return this;
 }
 
-QMongo.prototype.runCommand = function runCommand( cmd, args, callback ) {
-    if (!callback) { callback = args; args = null; }
-    this.find(cmd, {w: 1, limit: 1}, function(err, ret) {
-        return err ? callback(err) : callback(null, ret[0]);
+QMongo.prototype.runCommand = function runCommand( cmd, callback ) {
+    this.collection('$cmd').find(cmd, {limit: 1}).toArray(function(err, ret) {
+        return err ? callback(err) : callback(null, ret[0] || ret);
     });
 }
 
@@ -348,8 +347,9 @@ QMongo.prototype.auth = function auth( username, password, database, callback ) 
 
     var self = this;
     self.db(database).runCommand({ getnonce: 1}, function(err, ret) {
-        if (!err && !ret.ok) err = new Error("auth error: code " + ret.code + ", " + ret.errmsg);
         if (err) return callback(err);
+        if (!ret) return callback(new MongoError("no reply from runCommand"));
+        if (!ret.ok) err = new Error("auth error: code " + ret.code + ", " + ret.errmsg);
         self.db(database).runCommand({
             authenticate: 1,
             nonce: ret.nonce,
