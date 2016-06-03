@@ -16,12 +16,8 @@ Api
 
 ### qmongo.connect( url, options, callback(err, qm) )
 
-Connect to the db named by the url.  The url format is "mongodb://<user>:<pwd>@<host></database>".
-The leading "mongodb://" and the hostname "<host>" are required.
-
-### new qmongo.QMongo( socket [,options] )
-
-### qm.auth( username, password, database )
+Connect to the db named by the url.  The url format is `"mongodb://<user>:<pwd>@<host></database>"`.
+The leading "mongodb://" and the hostname `"<host>"` are required.
 
 ### qm.useCollection( [dbName,] collectionName )
 
