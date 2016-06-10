@@ -29,7 +29,6 @@ the named collection in the named database).  This setting persists for this
 `test` and `test`, respectively.  Returns the `db` for chaining to the next call.
 
 ### db.find( query, options, callback(err, documents) )
-### db.find( query, options ).toArray( callback(err, documents) )
 
 Find documents in the current collection in use.  Returns the found documents to
 its callback.  If no callback is given, returns a closure with a `toArray` method
@@ -39,7 +38,7 @@ Results are not batched and must fit into a single message (default 48 mb).
 
 Options:
 - skip - omit the first N matches (default 0)
-- limit - return no more than M matches (default all, or more precisely 2^31-1)
+- limit - return no more than M matches (default all)
 - raw - return the raw un-decoded BSON entities, not JS objects
 
 ### db.runCommand( cmd, callback(err, reply) )
