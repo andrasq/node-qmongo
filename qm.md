@@ -1,23 +1,35 @@
 qmongo-lite
 ===========
 
-Greatly simplified no-frills fast mongodb driver for nodejs.  A large part of the
-speedup is from reduced memory pressure and faster garbage collection.
+Greatly simplified no-frills fast mongodb driver for nodejs.
 
-This is a ground-up rewrite, it is not a wrapper for (in fact, does not share any
-code with) the official MongoDB nodejs [mongodb](https://npmjs.org/package/mongodb)
-driver.  All the code for talking to the database is in `qm.js` (575 lines) and in
-the related [`qbson`](https://github.com/andrasq/node-qbson) BSON encode/decode
-functions.
+This is a ground-up rewrite, it is not a wrapper for the nodejs
+[mongodb](https://npmjs.org/package/mongodb) driver.  All the code for talking to
+the database is in `qm.js` (575 lines) and in the related
+[`qbson`](https://github.com/andrasq/node-qbson) BSON encode/decode functions.
+
+The functionality is narrowly focused:  talk to a single mongod server over a
+single socket, send it commands, and return the responses.  Commands and responses
+are pipelined, but are executed by mongod in order.
+
+Unlike the official driver, this version comes in at 1/20 th its size by using just
+a single socket, having no automatic reconnect, no built-in cluster support, no
+query cursor, no batching, no data streaming.  Some of that is rarely useful,
+and all of it is fairly easy to implement in a separate layer.
+
+(The related [`qmongo`](qmongo.js) driver is slightly larger but does support
+reconnects, cursors and data streaming.  They are both different experiments,
+this one is in minimalism.)
 
         var qm = require('qmongo/qm');
         var mongoUri = "mongodb://user:pass@localhost/database";
         qm.connect(mongoUri, function(err, db) {
             db.useCollection('admin', 'users');
             db.find({deleted: {$ne: true}}, function(err, docs) {
-                // got docs.length matching non-deleted documents
+                // got docs.length matching non-deleted users
             });
         });
+
 
 Api
 ---
@@ -42,7 +54,7 @@ that will deliver the matching documents to its callback when available.
 
 Results are not batched and must fit into a single message (default 48 mb).
 
-Options:
+Find uses version 0 of the MongoDB wire protocol, and offers the options:
 - skip - omit the first N matches (default 0)
 - limit - return no more than M matches (default all)
 - raw - return the raw un-decoded BSON entities, not JS objects
@@ -50,4 +62,5 @@ Options:
 ### db.runCommand( cmd, callback(err, reply) )
 
 Execute the mongodb [database command](https://docs.mongodb.com/manual/reference/command/)
-against the current database and return the results.
+against the current database and return the result object.  The result will have a field `ok`
+that indicates whether the command succeeded.
