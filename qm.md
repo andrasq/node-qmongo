@@ -34,7 +34,7 @@ this one is in minimalism.)
 Api
 ---
 
-### qm.connect( url, options, callback(err, qm) )
+### qm.connect( url, options, callback(err, db) )
 
 Connect to the db named by the url.  The url format is `"mongodb://<user>:<pwd>@<host></database>"`.
 The leading `"mongodb://"` and the hostname `"@<host>"` are required.  Returns a qm database client.
@@ -64,3 +64,7 @@ Find uses version 0 of the MongoDB wire protocol, and offers the options:
 Execute the mongodb [database command](https://docs.mongodb.com/manual/reference/command/)
 against the current database and return the result object.  The result will have a field `ok`
 that indicates whether the command succeeded.
+
+### db.close( )
+
+Close the connection to MongoDB.
