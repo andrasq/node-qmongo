@@ -226,7 +226,9 @@ QMongo.prototype.collection = function collection( collectionName ) {
 }
 
 QMongo.prototype.runCommand = function runCommand( cmd, callback ) {
+    var self = this, savedCollection = this.collectionName;
     this.collection('$cmd').find(cmd, {limit: 1}).toArray(function(err, ret) {
+        self.collection(savedCollection);
         return err ? callback(err) : callback(null, ret[0] || ret);
     });
 }
