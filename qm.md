@@ -4,6 +4,12 @@ qmongo-lite
 Greatly simplified no-frills fast mongodb driver for nodejs.  A large part of the
 speedup is from reduced memory pressure and faster garbage collection.
 
+This is a ground-up rewrite, it is not a wrapper for (in fact, does not share any
+code with) the official MongoDB nodejs [mongodb](https://npmjs.org/package/mongodb)
+driver.  All the code for talking to the database is in `qm.js` (575 lines) and in
+the related [`qbson`](https://github.com/andrasq/node-qbson) BSON encode/decode
+functions.
+
         var qm = require('qmongo/qm');
         var mongoUri = "mongodb://user:pass@localhost/database";
         qm.connect(mongoUri, function(err, db) {
