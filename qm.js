@@ -15,7 +15,6 @@
 
 'use strict';
 
-module.exports = QMongo;
 
 var net = require('net');
 var util = require('util');
@@ -567,6 +566,11 @@ function decodeReply( buf, base, bound, raw ) {
 
     return reply;
 }
+
+module.exports = function(url, options, cb) { return QMongo.connect(url, options, cb) };
+module.exports.connect = QMongo.connect;
+module.exports.QMongo = QMongo;
+
 
 
 // quicktest:
