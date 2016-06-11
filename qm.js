@@ -570,7 +570,17 @@ function decodeReply( buf, base, bound, raw ) {
 module.exports = function(url, options, cb) { return QMongo.connect(url, options, cb) };
 module.exports.connect = QMongo.connect;
 module.exports.QMongo = QMongo;
+module.exports.MongoError = MongoError;
 
+module.exports.ObjectId = qbson.ObjectId;
+module.exports.ObjectID = qbson.ObjectId;
+module.exports.Timestamp = qbson.Timestamp;
+module.exports.Long = qbson.Long;
+module.exports.MinKey = qbson.MinKey;
+module.exports.MaxKey = qbson.MaxKey;
+module.exports.DbRef = qbson.DbRef;
+module.exports.Binary = qbson.Binary;
+module.exports.ScopedFunction = qbson.ScopedFunction;
 
 
 // quicktest:
