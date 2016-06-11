@@ -169,6 +169,14 @@ QMongo.prototype.setSocket = function setSocket( socket ) {
         self.close();             // callbacks should see it closed
         self._errorAllCalls(err);
     });
+
+    socket.once('close', function() {
+        if (!self._closed) {
+            self.socket = null;
+            self.close();
+            self._errorAllCalls();
+        }
+    });
 }
 
 QMongo._reconnect = function _reconnect( qmongo, options, callback ) {
@@ -208,8 +216,8 @@ QMongo.prototype._errorAllCalls = function _errorAllCalls( err ) {
 };
 
 QMongo.prototype.close = function close( ) {
-    if (this.socket) this.socket.end();
     this._closed = true;
+    if (this.socket) this.socket.end();
     this.socket = null;
     return this;
 };

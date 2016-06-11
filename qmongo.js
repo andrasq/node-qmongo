@@ -215,6 +215,17 @@ QMongo._reconnect = function _reconnect( qmongo, options, callback ) {
         }
     });
 
+    socket.once('close', function() {
+        if (qmongo && !self._closed) {
+            self.socket = null;
+            self.close();
+            self._error(err);
+            if (options.retryCount++ < options.retryLimit) {
+                setTimeout(QMongo._reconnect, options.retryInterval, qmongo, options, callback);
+            }
+        }
+    });
+
     socket.once('connect', function() {
         if (returned) return;
         returned = true;
@@ -244,8 +255,8 @@ QMongo.prototype._error = function _error( err ) {
 };
 
 QMongo.prototype.close = function close( ) {
-    if (this.socket) this.socket.end();
     this._closed = true;
+    if (this.socket) this.socket.end();
     this.socket = null;
     return this;
 };
