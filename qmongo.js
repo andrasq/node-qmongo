@@ -265,7 +265,7 @@ Db.prototype.collection = function collection( collectionName, callback ) {
 Db.prototype.runCommand = function runCommand( cmd, callback ) {
     var db = (this instanceof Db) ? this : this.db(this.dbName);
     db.collection('$cmd').find(cmd, {limit: 1}).toArray(function(err, ret) {
-        return err ? callback(err) : callback(null, ret[0]);
+        return err ? callback(err) : callback(null, ret[0] || ret);
     });
 }
 Db.prototype.close = function( ) {
