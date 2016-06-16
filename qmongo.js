@@ -216,10 +216,10 @@ QMongo._reconnect = function _reconnect( qmongo, options, callback ) {
     });
 
     socket.once('close', function() {
-        if (qmongo && !self._closed) {
-            self.socket = null;
-            self.close();
-            self._error(err);
+        if (qmongo && !qmongo._closed) {
+            qmongo.socket = null;
+            qmongo.close();
+            qmongo._error(err);
             if (options.retryCount++ < options.retryLimit) {
                 setTimeout(QMongo._reconnect, options.retryInterval, qmongo, options, callback);
             }
