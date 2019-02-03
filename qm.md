@@ -43,12 +43,12 @@ The leading `"mongodb://"` and the hostname `"@<host>"` are required.  Returns a
 
 Make the subsequent commands operate on the named collection (or, optionally,
 the named collection in the named database).  This setting persists for this
-`qm` object until next changed.  The default database and collection are
+`db` object until next changed.  The default database and collection are
 `test` and `test`, respectively.  Returns the `db` for chaining to the next call.
 
 ### db.find( query, options, callback(err, documents) )
 
-Find documents in the current collection in use.  Returns the found documents to
+Find documents in the current collection.  Returns the found documents to
 its callback.  If no callback is given, returns a closure with a `toArray` method
 that will deliver the matching documents to its callback when available.
 
