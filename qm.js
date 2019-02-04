@@ -7,7 +7,7 @@
  *
  * See also qmongo.js that supports batched streaming and cursors.
  *
- * Copyright (C) 2016 Andras Radics
+ * Copyright (C) 2016,2019 Andras Radics
  * Licensed under the Apache License, Version 2.0
  *
  * 2016-05-24 - AR.
@@ -200,7 +200,7 @@ QMongo._reconnect = function _reconnect( qmongo, options, callback ) {
         if (!options.username) return callback(null, qmongo);
 
         qmongo.auth(options.username, options.password, options.database, function(err) {
-            if (err) console.log("qmongo: auth failed for %s", options.username);
+            if (err) console.warn("qmongo: auth failed for %s:", options.username, err.codeName || err.message);
             callback(err, qmongo);
         });
     });
@@ -357,7 +357,7 @@ QMongo.prototype.auth = function auth( username, password, database, callback ) 
     var self = this;
     self.db(database).runCommand({ getnonce: 1}, function(err, ret) {
         if (err) return callback(err);
-        if (!ret) return callback(new MongoError("no reply from runCommand"));
+        if (!ret) return callback(new MongoError("auth error: no reply from getnonce"));
         if (!ret.ok) err = new Error("auth error: code " + ret.code + ", " + ret.errmsg);
         self.db(database).runCommand({
             authenticate: 1,
@@ -366,7 +366,7 @@ QMongo.prototype.auth = function auth( username, password, database, callback ) 
             key: md5sum(ret.nonce + username + md5sum(username + ":mongo:" + password))
         },
         function(err, ret) {
-            if (!err && !ret.ok) err = new Error("auth error: code " + ret.code + ", " + ret.errmsg);
+            if (!err && !ret.ok) { err = new Error(ret.errmsg || 'auth failed'); for (var k in ret) err[k] = ret[k]; }
             callback(err);
         });
     });
@@ -456,7 +456,7 @@ function deliverReplies( qmongo, qbuf ) {
         var header = decodeHeader(buf, 0);
         if (header.opCode !== OP_REPLY) {
             // TODO: handle this better, maybe emit 'warning'
-            console.log("qmongo: not a reply, skipping unexpected opCode " + header.opCode);
+            console.warn("qmongo: not a reply, skipping unexpected opCode " + header.opCode);
             continue;
         }
 
@@ -464,7 +464,7 @@ function deliverReplies( qmongo, qbuf ) {
         var qInfo = qmongo.callbacks[header.responseTo];
         if (!qInfo) {
             // TODO: handle this better, maybe emit 'warning'
-            console.log("qmongo: not ours, ignoring reply to %d", header.responseTo, qInfo);
+            console.warn("qmongo: not ours, ignoring reply to %d", header.responseTo, qInfo);
             continue;
         }
         // clean up the callback map
@@ -563,7 +563,7 @@ function decodeReply( buf, base, bound, raw ) {
     }
     if (base !== bound) {
         // FIXME: clean up without killing self. (eg, make a method, and emit 'error')
-        console.log("qmongo: incomplete entity, header:", decodeHeader(buf, base), "flags:", reply.responseFlags.toString(16),
+        console.warn("qmongo: incomplete entity, header:", decodeHeader(buf, base), "flags:", reply.responseFlags.toString(16),
             "buf:", buf.strings(base), buf.slice(base-30), "error:", reply.error);
         throw new MongoError("corrupt bson, incomplete entity " + base + " of " + bound);
     }
