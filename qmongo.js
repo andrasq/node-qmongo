@@ -68,9 +68,20 @@ function QMongo( socket, options ) {
     this.callbacks = new Object();
     this.sentIds = new Array();
 
+    this._stats = {
+        calls: 0,       // mongo calls made
+        written: 0,     // bytes written to mongo
+        read: 0,        // response bytes read
+    };
+
     this.dbName = options.database || 'test';
     this.collectionName = options.collection || 'test';
     this.batchSize = options.batchSize || 10000;
+
+    // best concurrency value depends on how much latency is being spanned
+    // 10% faster with 300 if making 50k concurrent calls, 25% for 500k
+    this._maxConcurrentCalls = options.maxConcurrentCalls || 10;
+
     this._closed = false;
     this._deliverRunning = false;
     this._runningCallsCount = 0;
@@ -199,6 +210,7 @@ QMongo._reconnect = function _reconnect( qmongo, options, callback ) {
         // gather the data and try to deliver.  mutexes and pacing in the delivery func
         qmongo.qbuf.write(chunk);
         setImmediate(deliverReplies, qmongo, qmongo.qbuf);
+        qmongo._stats.read += chunk.length;
     });
 
     // catch socket errors else eg ECONNREFUSED is fatal
@@ -351,11 +363,7 @@ QMongo.prototype.killCursor = function killCursor( cursorId ) {
 // send more calls to the db server
 QMongo.prototype.scheduleQuery = function scheduleQuery( ) {
     var qInfo, id;
-    // TODO: make the concurrent call limit configurable,
-    // best value depends on how much latency is being spanned
-    // 10% faster with 300 if making 50k concurrent calls, 25% for 500k
-    // Empirically, 3 seems to be a good value
-    while (this._runningCallsCount < 3 && (qInfo = this.queryQueue.shift())) {
+    while (this._runningCallsCount < this._maxConcurrentCalls && (qInfo = this.queryQueue.shift())) {
         // TODO: no reason why the queued queries cant be retried after a reconnect
         if (qInfo.cb) {
             if (this._closed) return qInfo.cb(new Error("connection closed"));
@@ -377,6 +385,9 @@ QMongo.prototype.scheduleQuery = function scheduleQuery( ) {
         if (bson[12] === (OP_QUERY & 0xFF) || bson[12] === (OP_GET_MORE & 0xFF)) this._runningCallsCount += 1;
         qInfo.bson = 'sent';
 
+        this._stats.calls += 1;
+        this._stats.written += bson.length;
+
         // not all ops expect (or get) a reply.
         if (qInfo.cb) {
             this.callbacks[id] = qInfo;
@@ -385,6 +396,9 @@ QMongo.prototype.scheduleQuery = function scheduleQuery( ) {
         // TODO: should try to yield between passes to interleave with replies
 // TODO: time out queries (callbacks) that take too long.
     }
+}
+QMongo.prototype.stats = function stats( ) {
+    return this._stats;
 }
 
 QMongo.prototype.opKillCursors = function opKillCursors( cursors ) {
