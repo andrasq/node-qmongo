@@ -312,7 +312,9 @@ Collection.prototype.insert = function insert( items, options, callback ) {
     var command = {
         insert: this.collectionName,
         documents: items instanceof Array ? items : [ items ],
-        writeConcern : {
+        ordered: options.ordered,
+        //bypassDocumentValidation: options.bypassDocumentValidation,
+        writeConcern : options.writeConcern || {
             w: options.w !== undefined ? options.w : 1,
         }
     }
@@ -322,9 +324,10 @@ Collection.prototype.remove = function remove( query, options, callback ) {
     if (!callback && typeof options === 'function') { callback = options; options = {}; }
     if (!query || typeof query !== 'object') return maybeCallback(callback, new TypeError('query must be an object'));
     var command = {
-        remove: this.collectionName,
-        query: query,
-        writeConcern : {
+        delete: this.collectionName,
+        deletes: [{ q: query, limit: options.limit }],
+        ordered: options.ordered,
+        writeConcern : options.writeConcern || {
             w: options.w !== undefined ? options.w : 1,
         }
     }
