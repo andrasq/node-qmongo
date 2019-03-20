@@ -11,10 +11,10 @@
 
 var net = require('net');
 var qbson = require('qbson');
-var utf8 = require('qbson/utf8');
+var utf8 = require('q-utf8');
 var QBuffer = require('qbuffer');
 var util = require('util');
-var BSON = require('bson').BSONPure.BSON;
+var BSON = require('./bson');
 
 function MongoError(){ Error.call(this); }
 util.inherits(MongoError, Error);
@@ -113,7 +113,7 @@ function pack( buf, offset, typeVals ) {
             offset = putInt32(buf, typeVals[i+1]);
             break;
         case 'cs':  // cstring
-            offset = utf8.encodeUtf8Overlong(typeVals[i+1], 0, typeVals[i+1].length, buf, offset);
+            offset = utf8.utf8_encodeOverlong(typeVals[i+1], 0, typeVals[i+1].length, buf, offset);
             buf[offset++] = 0;
             break;
         }
@@ -217,7 +217,7 @@ function buildQuery( ns, query, fields, skip, limit ) {
     // build the query
     var offset = 0;
     offset = putInt32(0, msg, 16);                              // flags, must be set
-    offset = utf8.encodeUtf8Overlong(ns, 0, ns.length, msg, 20); // ns
+    offset = utf8.utf8_encodeOverlong(ns, 0, ns.length, msg, 20); // ns
     msg[offset++] = 0;  // NUL byte cstring terminator
     offset = putInt32(skip, msg, offset);          // skip
     offset = putInt32(limit, msg, offset);         // limit

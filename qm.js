@@ -22,7 +22,7 @@ var crypto = require('crypto');
 
 var QBuffer = require('qbuffer');
 var QList = require('qlist');
-var utf8 = require('qbson/utf8');
+var utf8 = require('q-utf8');
 var qbson = require('qbson');
 var bytes = require('qbson/bytes');
 
@@ -31,7 +31,7 @@ var getUInt32 = qbson.decode.getUInt32;
 var getBsonEntities = qbson.decode.getBsonEntities;     // bson_decode of mongodump concat data
 var encodeEntities = qbson.encode.encodeEntities;       // bson_encode into buffer
 function putStringZ( str, buf, offset ) {
-    offset = utf8.encodeUtf8Overlong(str, 0, str.length, buf, offset);
+    offset = utf8.utf8_encodeOverlong(str, 0, str.length, buf, offset);
     buf[offset++] = 0;
     return offset;
 }
@@ -402,7 +402,7 @@ function buildQuery( reqId, ns, query, fields, skip, limit ) {
     // build the query
     var offset = 0;
     offset = putInt32(0, msg, 16);                              // flags, must be set
-    offset = utf8.encodeUtf8Overlong(ns, 0, ns.length, msg, 20); // ns
+    offset = utf8.utf8_encodeOverlong(ns, 0, ns.length, msg, 20); // ns
     msg[offset++] = 0;  // NUL byte cstring terminator
     offset = putInt32(skip, msg, offset);          // skip
     offset = putInt32(limit, msg, offset);         // limit
@@ -569,7 +569,7 @@ function decodeReply( buf, base, bound, raw ) {
     }
     if (reply.documents.length !== reply.numberReturned) {
         // FIXME: handle this better
-        throw new MongoError("did not get expected number of documents, got " + reply.documents.length + " vs " + reply.numberReturned);
+        throw new MongoError("did not get expected number of documents, got " + reply.documents.length + ", expected " + reply.numberReturned);
     }
 
     return reply;

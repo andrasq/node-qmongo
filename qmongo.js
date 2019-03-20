@@ -30,14 +30,14 @@ var crypto = require('crypto');
 
 var QBuffer = require('qbuffer');
 var QList = require('qlist');
-var utf8 = require('qbson/utf8');
+var utf8 = require('q-utf8');
 var qbson = require('qbson');
 
 var putInt32 = qbson.encode.putInt32;
 var getUInt32 = qbson.decode.getUInt32;
 
 function putStringZ( str, buf, offset ) {
-    offset = utf8.encodeUtf8Overlong(str, 0, str.length, buf, offset);
+    offset = utf8.utf8_encodeOverlong(str, 0, str.length, buf, offset);
     buf[offset++] = 0;
     return offset;
 }
