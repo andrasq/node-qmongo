@@ -270,7 +270,7 @@ function Db( qmongo, dbName ) {
     this.dbName = dbName;
 }
 Db.prototype.collection = function collection( collectionName, callback ) {
-    var coll = new Collection(this.qmongo, this.dbName, collectionName);
+    var coll = new Collection(this, this.dbName, collectionName);
     return (callback) ? callback(null, coll) : coll;
 }
 Db.prototype.runCommand = function runCommand( cmd, callback ) {
@@ -284,15 +284,41 @@ Db.prototype.close = function( ) {
 }
 Db.prototype = Db.prototype;
 
-function Collection( qmongo, dbName, collectionName ) {
-    this.qmongo = qmongo;
+function Collection( db, dbName, collectionName ) {
     this.dbName = dbName;
     this.collectionName = collectionName;
+    this.db = db;
 }
 Collection.prototype.find = function find( query, options, callback ) {
     var _ns = this.dbName + '.' + this.collectionName;          // namespace to use
-    return this.qmongo.find(query, options, callback, _ns);     // and have qmongo make the call
+    return this.db.qmongo.find(query, options, callback, _ns);  // and have qmongo make the call
 }
+Collection.prototype.insert = function insert( items, options, callback ) {
+    if (!callback && typeof options === 'function') { callback = options; options = {}; }
+    if (!items || typeof items !== 'object') return maybeCallback(callback, new TypeError('items must be an object or an array of objects'));
+    // TODO: set _id in item/items
+    var command = {
+        insert: this.collectionName,
+        documents: items instanceof Array ? items : [ items ],
+        writeConcern : {
+            w: options.w !== undefined ? options.w : 1,
+        }
+    }
+    this.db.runCommand(command, callback);
+}
+Collection.prototype.remove = function remove( query, options, callback ) {
+    if (!callback && typeof options === 'function') { callback = options; options = {}; }
+    if (!query || typeof query !== 'object') return maybeCallback(callback, new TypeError('query must be an object'));
+    var command = {
+        remove: this.collectionName,
+        query: query,
+        writeConcern : {
+            w: options.w !== undefined ? options.w : 1,
+        }
+    }
+    this.db.runCommand(command, callback);
+}
+
 Collection.prototype = Collection.prototype;
 
 
