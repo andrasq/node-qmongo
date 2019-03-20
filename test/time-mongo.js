@@ -122,6 +122,7 @@ function pack( buf, offset, typeVals ) {
 }
 
 // maybe:
+// See also qunpack.
 function unpack( buf, base, target, typeNames ) {
     for (var i=0; i<typeNames.length; i+=2) {
         switch (types[i]) {
@@ -338,27 +339,32 @@ var _nReplies = 0;
 // note: good batch size (for kdsdir) is 200
 
 socket.on('connect', function() {
+var totalSent = 0;
 console.log("AR: connect");
     t0 = t1 = fptime();
     for (var i=0; i<_nQueries; i++) {
         var msg = buildQuery('kinvey.kdsdir', {}, null/*{_id:1}*/, 0, 200);
         socket.write(msg);
+        totalSent += msg.length;
     }
     t2 = fptime();
-    console.log("AR: built and sent %d queries in %d s", _nQueries, t2 - t1);
-    // can send 200k queries per second (find any limit 1)
+    console.log("AR: built and sent %d queries in %d s, total %d bytes", _nQueries, t2 - t1, totalSent);
+    // can send 200k queries per second (find any limit 1) (420k/s SKL 4.2g node-v11.8.0)
     // can build and send 95k queries per second (4.4.0 could to 110k/s)
     // can receive 115k replies per second (113B single entity)
+    //   note: cannot reproduce, now getting 65k/s 207B entities all fields singly (42k/s 61B entities w/o _id node-v11.8.0)
     // can build/receive 41k calls / sec (pipelined, 1 entity all fields; 30k/s 4 fields: if all fields, fields obj not serialized!)
     // (the bottleneck is on the mongo side, to do the field matching?  23% faster to retrieve all fields than just _id!)
     //setTimeout(function(){ socket.end() }, 2000);
-    // fetches over 300k kdsdir records / sec 3 fields, 132k/s all fields, 570k/s just _id (all these fully decoded!)
+    // fetches over 300k kdsdir records / sec 3 fields, 132k/s all fields, 570k/s just _id (all these fully decoded!) (558k/s 164B entities 100 at a time v11.8.0)
+    //   note: 520k/s entities/sec all fields decode in groups of @100 node-v11.8.0, 550k/s @20 v11.8.0
     // fetches 875k/s 50@ kdsdir records all fields as bson (not decoded) -- ie not decoding is 6.5x faster to move data
     // fetch 1.15m/s 10k@ kdsdir records all fields as bson (but only 94k/s 10k@ decoded... 12x faster! BUT: 131k/s 1k@, 130k/s 200@, 126k/s @100)
     t1 = fptime();
 });
 
 var qbuf = new QBuffer({ encoding: null });
+var totalBytes = 0;
 socket.on('data', function(chunk) {
 //console.log("AR: data", t1, t2);
     t2 = fptime();
@@ -368,15 +374,17 @@ socket.on('data', function(chunk) {
     // mongo can send 37.5k 699B responses per second.  Decoding is extra.
 
     function dispatchReply(err, reply) {
+//console.log("AR: reply", reply.documents);
 // FIXME: TODO:
         _nReplies += 1;
     }
 
+    totalBytes += chunk.length;
     qbuf.write(chunk);
     handleRepliesQ(qbuf, 1000000, dispatchReply, function(err, n) {
         if (_nReplies === _nQueries) {
             t3 = fptime();
-            console.log("AR: handled %d queries in %d s", _nQueries, t3 - t0);
+            console.log("AR: handled %d queries in %d sec, got %d bytes", _nQueries, t3 - t0, totalBytes);
             socket.end();
         }
     });
