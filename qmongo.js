@@ -325,7 +325,7 @@ Collection.prototype.remove = function remove( query, options, callback ) {
     if (!query || typeof query !== 'object') return maybeCallback(callback, new TypeError('query must be an object'));
     var command = {
         delete: this.collectionName,
-        deletes: [{ q: query, limit: options.limit }],
+        deletes: [{ q: query, limit: options.limit, collation: options.collation }],
         ordered: options.ordered,
         writeConcern : options.writeConcern || {
             w: options.w !== undefined ? options.w : 1,
