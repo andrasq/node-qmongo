@@ -1,6 +1,6 @@
 {
   "name": "qmongo",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "lean, fast mongodb driver",
   "keywords": ["fast", "mongo", "mongodb", "driver", "Andras"],
   "license": "Apache-2.0",
@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "qbson": "git://github.com/andrasq/node-qbson",
-    "qlist": "0.11.0",
-    "qbuffer": "1.3.0"
+    "qlist": "0.14.0",
+    "qbuffer": "1.4.0"
   },
   "devDependencies": {
     "mongodb": "2.x",
